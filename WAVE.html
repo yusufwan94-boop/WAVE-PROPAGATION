@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 KSSM Wave Explorer - Interactive Physics</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Playful/Joyful Aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- MathJax Configuration and Script for Beautiful Equation Rendering -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Quicksand', 'sans-serif'],
+                        display: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        joyPink: '#FF80B5',
+                        joyYellow: '#FFD000',
+                        joyBlue: '#40A9FF',
+                        joyGreen: '#4CD964',
+                        joyPurple: '#AF52DE',
+                        joyCoral: '#FF5E5B',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Interactive Flip Card Styles */
+        .flip-card {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card-flipped {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-indigo-50 min-h-screen font-sans text-slate-800 pb-16 selection:bg-joyPink selection:text-white">
+
+    <!-- TOP DECORATIVE FLOATER -->
+    <div class="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-joyPink via-joyYellow to-joyBlue z-50"></div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        
+        <!-- HEADER BENTO BOX -->
+        <header class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-slate-900 flex flex-col md:flex-row justify-between items-center gap-6 mb-8 relative overflow-hidden">
+            <div class="absolute -right-12 -bottom-12 w-48 h-48 bg-joyYellow/20 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -left-12 -top-12 w-48 h-48 bg-joyBlue/20 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div class="flex items-center gap-5 z-10">
+                <div class="bg-joyBlue p-4 rounded-2xl border-4 border-slate-900 transform -rotate-3 hover:rotate-3 transition-transform cursor-pointer">
+                    <span class="text-4xl sm:text-5xl block animate-pulse">🌊</span>
+                </div>
+                <div>
+                    <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900" id="app-title">
+                        KSSM Wave Explorer
+                    </h1>
+                    <p class="text-sm sm:text-base font-bold text-slate-500 mt-1" id="app-subtitle">
+                        Interactive bilingual physics companion for secondary schools
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 z-10">
+                <!-- Translation Button -->
+                <button onclick="toggleLanguage()" class="bg-joyYellow hover:bg-yellow-400 text-slate-900 font-extrabold px-6 py-3 rounded-2xl border-4 border-slate-900 shadow-[4px_4px_0px_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-language text-xl"></i>
+                    <span id="lang-btn-text">Bahasa Melayu</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- NAVIGATION MENU BENTO -->
+        <nav class="bg-white rounded-3xl p-4 shadow-xl border-4 border-slate-900 mb-8 overflow-x-auto no-scrollbar">
+            <div class="flex gap-3 min-w-max">
+                <button onclick="switchTab(1)" id="tab-1" class="tab-btn px-6 py-3 rounded-2xl font-display font-black text-lg transition-all border-4 border-slate-900 shadow-[4px_4px_0px_#000] translate-x-0 translate-y-0 bg-joyPink text-white">
+                    <i class="fa-solid fa-bezier-curve mr-2"></i><span data-key="tab1">1. Fundamentals</span>
+                </button>
+                <button onclick="switchTab(2)" id="tab-2" class="tab-btn px-6 py-3 rounded-2xl font-display font-black text-lg transition-all border-4 border-slate-900 shadow-[4px_4px_0px_#000] translate-x-0 translate-y-0 bg-white text-slate-700 hover:bg-slate-100">
+                    <i class="fa-solid fa-mirror mr-2"></i><span data-key="tab2">2. Reflection</span>
+                </button>
+                <button onclick="switchTab(3)" id="tab-3" class="tab-btn px-6 py-3 rounded-2xl font-display font-black text-lg transition-all border-4 border-slate-900 shadow-[4px_4px_0px_#000] translate-x-0 translate-y-0 bg-white text-slate-700 hover:bg-slate-100">
+                    <i class="fa-solid fa-water mr-2"></i><span data-key="tab3">3. Refraction</span>
+                </button>
+                <button onclick="switchTab(4)" id="tab-4" class="tab-btn px-6 py-3 rounded-2xl font-display font-black text-lg transition-all border-4 border-slate-900 shadow-[4px_4px_0px_#000] translate-x-0 translate-y-0 bg-white text-slate-700 hover:bg-slate-100">
+                    <i class="fa-solid fa-door-open mr-2"></i><span data-key="tab4">4. Diffraction</span>
+                </button>
+                <button onclick="switchTab(5)" id="tab-5" class="tab-btn px-6 py-3 rounded-2xl font-display font-black text-lg transition-all border-4 border-slate-900 shadow-[4px_4px_0px_#000] translate-x-0 translate-y-0 bg-white text-slate-700 hover:bg-slate-100">
+                    <i class="fa-solid fa-tower-broadcast mr-2"></i><span data-key="tab5">5. Interference</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- MAIN INTERACTIVE MODULE CONTROLLER -->
+        <main id="simulation-viewport" class="space-y-8">
+            
+            <!-- MODULE 1: FUNDAMENTALS -->
+            <section id="module-1" class="module-section space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Control panel (4 Cols) -->
+                    <div class="lg:col-span-4 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block bg-joyPink/20 text-joyPink font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider mb-3 border-2 border-joyPink" data-key="f_tag">Theory & Parameters</span>
+                            <h2 class="font-display text-2xl font-black text-slate-900 mb-2" data-key="f_title">Fundamental of Waves</h2>
+                            <p class="text-slate-600 mb-6" data-key="f_desc">Explore displacement changes across distance and time, and compare static/progressive waves.</p>
+                            
+                            <!-- Controls -->
+                            <div class="space-y-5">
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_amp">Amplitude (A)</span>
+                                        <span id="f-amp-val" class="text-joyPink">50</span>
+                                    </div>
+                                    <input type="range" id="f-amp" min="10" max="80" value="50" oninput="updateFundParams()" class="w-full accent-joyPink">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_freq">Frequency (f)</span>
+                                        <span id="f-freq-val" class="text-joyPink">2 Hz</span>
+                                    </div>
+                                    <input type="range" id="f-freq" min="0.5" max="4" step="0.1" value="2" oninput="updateFundParams()" class="w-full accent-joyPink">
+                                </div>
+
+                                <div class="pt-3">
+                                    <label class="block font-bold mb-2 text-slate-700" data-key="ctrl_type">Wave Nature</label>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <button onclick="setStanding(false)" id="btn-prog" class="bg-joyPink text-white font-extrabold py-2.5 px-4 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#000] active:translate-y-[2px] transition-all">
+                                            <span data-key="f_prog">Progressive</span>
+                                        </button>
+                                        <button onclick="setStanding(true)" id="btn-stand" class="bg-white text-slate-700 font-extrabold py-2.5 px-4 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#000] active:translate-y-[2px] hover:bg-slate-100 transition-all">
+                                            <span data-key="f_stat">Standing</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini Bilingual Note box -->
+                        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 mt-6 text-sm text-indigo-900 font-medium">
+                            <i class="fa-solid fa-lightbulb mr-1.5 text-joyYellow"></i>
+                            <span data-key="f_note">Hint: Progressive waves transfer energy, whereas standing (stationary) waves retain energy!</span>
+                        </div>
+                    </div>
+
+                    <!-- Graph Visualization area (8 Cols) -->
+                    <div class="lg:col-span-8 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Graph 1: y-x -->
+                            <div class="space-y-2">
+                                <h3 class="font-display text-lg font-black text-slate-800 text-center" data-key="f_graph1">Displacement-Distance Graph (y-x)</h3>
+                                <div class="bg-slate-50 border-4 border-slate-900 rounded-2xl overflow-hidden shadow-inner p-2">
+                                    <canvas id="canvas-fund-1" class="w-full h-[220px] bg-slate-900 rounded-xl"></canvas>
+                                </div>
+                                <p class="text-xs text-slate-500 font-bold text-center" data-key="f_graph1_sub">Shows wave profile at a frozen instant of time. Use to find wavelength (λ).</p>
+                            </div>
+                            <!-- Graph 2: y-t -->
+                            <div class="space-y-2">
+                                <h3 class="font-display text-lg font-black text-slate-800 text-center" data-key="f_graph2">Displacement-Time Graph (y-t)</h3>
+                                <div class="bg-slate-50 border-4 border-slate-900 rounded-2xl overflow-hidden shadow-inner p-2">
+                                    <canvas id="canvas-fund-2" class="w-full h-[220px] bg-slate-900 rounded-xl"></canvas>
+                                </div>
+                                <p class="text-xs text-slate-500 font-bold text-center" data-key="f_graph2_sub">Follows particle P as it moves up and down over time. Use to find Period (T).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flip Card Quiz Section -->
+                <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900">
+                    <h3 class="font-display text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                        <span class="text-xl">💡</span> <span data-key="quiz_title">Test Your Understanding (Click to Flip)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Card 1 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyPink text-white font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">🤔</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q1">What is the formula linking velocity, frequency and wavelength?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display">v = f * λ</p>
+                                    <p class="text-xs mt-2" data-key="a1">Velocity = Frequency x Wavelength. Standard KSSM wave speed formula!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyBlue text-white font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">⏱️</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q2">How is period (T) related to frequency (f)?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display">T = 1 / f</p>
+                                    <p class="text-xs mt-2" data-key="a2">Period is the reciprocal of frequency. Time taken for one complete wave.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 3 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyGreen text-slate-900 font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">🎸</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q3">What type of wave is generated on a plucked guitar string?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display" data-key="a3_title">Standing Wave</p>
+                                    <p class="text-xs mt-2" data-key="a3">A standing wave (gelombang pegun) is formed due to reflection and superposition of wave packets at boundaries.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 2: REFLECTION -->
+            <section id="module-2" class="module-section hidden space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Control panel (4 Cols) -->
+                    <div class="lg:col-span-4 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block bg-joyCoral/20 text-joyCoral font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider mb-3 border-2 border-joyCoral" data-key="refl_tag">Boundary Interactions</span>
+                            <h2 class="font-display text-2xl font-black text-slate-900 mb-2" data-key="refl_title">Reflection of Waves</h2>
+                            <p class="text-slate-600 mb-6" data-key="refl_desc">Observe how wave crests respond to a hard barrier. Adjust the barrier angle to test the Law of Reflection (i = r).</p>
+                            
+                            <!-- Controls -->
+                            <div class="space-y-5">
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_barrier_angle">Barrier Angle</span>
+                                        <span id="refl-angle-val" class="text-joyCoral">45°</span>
+                                    </div>
+                                    <input type="range" id="refl-angle" min="15" max="75" value="45" oninput="updateReflectionAngle()" class="w-full accent-joyCoral">
+                                </div>
+
+                                <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 space-y-2 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3.5 h-3.5 bg-sky-400 rounded"></div>
+                                        <span class="font-bold text-slate-600" data-key="lbl_incident">Incident Wavefronts</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3.5 h-3.5 bg-joyCoral rounded"></div>
+                                        <span class="font-bold text-slate-600" data-key="lbl_reflected">Reflected Wavefronts</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3.5 h-1 border-t-2 border-dashed border-slate-400"></div>
+                                        <span class="font-bold text-slate-600" data-key="lbl_normal">Normal Line</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Physics Note box -->
+                        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 mt-6 text-sm text-indigo-900 font-medium">
+                            <i class="fa-solid fa-circle-exclamation mr-1.5 text-joyCoral"></i>
+                            <span data-key="refl_law_note">Remember: Frequency, wavelength, and wave speed remain unchanged after reflection!</span>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Display (8 Cols) -->
+                    <div class="lg:col-span-8 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-center">
+                        <div class="bg-slate-950 border-4 border-slate-900 rounded-2xl overflow-hidden shadow-inner flex justify-center">
+                            <canvas id="canvas-refl" class="w-full max-w-2xl h-[400px] bg-slate-950"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flip Card Quiz Section -->
+                <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900">
+                    <h3 class="font-display text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                        <span class="text-xl">💡</span> <span data-key="quiz_title">Test Your Understanding (Click to Flip)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Card 1 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyCoral text-white font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">🌊</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q_refl1">Which parameters change after reflection occurs?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display" data-key="a_refl1_title">Only Direction!</p>
+                                    <p class="text-xs mt-2" data-key="a_refl1">Frequency, speed, and wavelength stay identical because the medium has not changed.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyPurple text-white font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">📢</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q_refl2">Give a practical example of reflection in sound waves.</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display" data-key="a_refl2_title">Echo & Sonar</p>
+                                    <p class="text-xs mt-2" data-key="a_refl2">Echos from high walls and SONAR used by ships to map the sea bed are both based on sound wave reflections.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 3: REFRACTION -->
+            <section id="module-3" class="module-section hidden space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Control panel (4 Cols) -->
+                    <div class="lg:col-span-4 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block bg-joyBlue/20 text-joyBlue font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider mb-3 border-2 border-joyBlue" data-key="refr_tag">Medium Transitions</span>
+                            <h2 class="font-display text-2xl font-black text-slate-900 mb-2" data-key="refr_title">Refraction of Waves</h2>
+                            
+                            <!-- Medium Selector Mode Group -->
+                            <div class="grid grid-cols-3 gap-2 mb-4 bg-slate-100 p-1.5 rounded-2xl border-2 border-slate-300">
+                                <button onclick="setRefractionMode('water')" id="btn-refr-water" class="bg-joyBlue text-white text-xs font-black py-2 rounded-xl transition-all">
+                                    <span data-key="refr_mode_water">Water</span>
+                                </button>
+                                <button onclick="setRefractionMode('sound-day')" id="btn-refr-sound-day" class="bg-transparent text-slate-600 hover:bg-slate-200 text-xs font-black py-2 rounded-xl transition-all">
+                                    <span data-key="refr_mode_sound_day">Sound (Day)</span>
+                                </button>
+                                <button onclick="setRefractionMode('sound-night')" id="btn-refr-sound-night" class="bg-transparent text-slate-600 hover:bg-slate-200 text-xs font-black py-2 rounded-xl transition-all">
+                                    <span data-key="refr_mode_sound_night">Sound (Night)</span>
+                                </button>
+                            </div>
+
+                            <p class="text-slate-600 mb-6 text-sm" id="refr-description-text" data-key="refr_desc">Observe waves travel from a deep region into a shallower boundary. Watch wavefronts compress and change direction.</p>
+                            
+                            <!-- Controls (Water Mode specific) -->
+                            <div id="refr-water-controls" class="space-y-5">
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_incident_angle_lbl">Angle of Incidence (i)</span>
+                                        <span id="refr-angle-lbl-val" class="text-joyBlue">35°</span>
+                                    </div>
+                                    <input type="range" id="refr-incident-angle-input" min="15" max="75" value="35" oninput="updateRefractionParamsFromUI()" class="w-full accent-joyBlue">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_shallow_depth">Shallow Region Depth</span>
+                                        <span id="refr-depth-val" class="text-joyBlue">50%</span>
+                                    </div>
+                                    <input type="range" id="refr-depth" min="15" max="85" value="50" oninput="updateRefractionParamsFromUI()" class="w-full accent-joyBlue">
+                                </div>
+
+                                <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 text-xs text-indigo-900 font-medium space-y-2">
+                                    <p class="font-bold flex items-center gap-1.5">
+                                        <i class="fa-solid fa-water"></i>
+                                        <span data-key="refr_speed_law">Depth vs Speed:</span>
+                                    </p>
+                                    <p data-key="refr_speed_desc">Lower depth means slower wave velocity, leading to shorter wavelength ($\lambda_2 < \lambda_1$) and wave bending!</p>
+                                    
+                                    <!-- Dynamic Wave Parameter Comparison Box -->
+                                    <div class="border-t border-indigo-200 pt-2 grid grid-cols-2 gap-2 text-[10px] font-mono font-bold">
+                                        <div>
+                                            <p class="text-blue-500 uppercase">1. Deep Zone</p>
+                                            <p>v₁ = <span id="v1-readout">1.60</span> m/s</p>
+                                            <p>λ₁ = <span id="l1-readout">34.0</span> cm</p>
+                                        </div>
+                                        <div class="border-l border-indigo-200 pl-2">
+                                            <p class="text-teal-600 uppercase">2. Shallow Zone</p>
+                                            <p>v₂ = <span id="v2-readout">0.80</span> m/s</p>
+                                            <p>λ₂ = <span id="l2-readout">17.0</span> cm</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Controls (Sound Mode Specific) -->
+                            <div id="refr-sound-controls" class="hidden space-y-4">
+                                <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-xs text-amber-900 font-medium space-y-2">
+                                    <p class="font-bold flex items-center gap-1.5 text-amber-800">
+                                        <i class="fa-solid fa-sun text-yellow-500"></i>
+                                        <span data-key="sound_refr_day_title">Daytime Behavior</span>
+                                    </p>
+                                    <p data-key="sound_refr_day_desc">Ground air is hot, higher air is cool. Sound speeds are faster near ground, causing sound waves to refract upwards away from ground.</p>
+                                </div>
+                                <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 text-xs text-sky-900 font-medium space-y-2">
+                                    <p class="font-bold flex items-center gap-1.5 text-sky-800">
+                                        <i class="fa-solid fa-moon text-blue-500"></i>
+                                        <span data-key="sound_refr_night_title">Nighttime Behavior</span>
+                                    </p>
+                                    <p data-key="sound_refr_night_desc">Ground air cools quickly, higher air is warmer (temperature inversion). Sound moves slower near ground, refracting downwards towards the audience.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Physics Formula box -->
+                        <div class="bg-slate-900 text-white rounded-2xl p-4 mt-6 border-4 border-slate-900 font-mono text-center relative overflow-hidden">
+                            <span class="absolute right-2 top-2 text-slate-800 text-3xl font-black"><i class="fa-solid fa-calculator"></i></span>
+                            <p class="text-xs text-joyYellow font-bold mb-1">SNELL'S LAW RELATION</p>
+                            <p class="text-lg font-black text-slate-100">$$\frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2} = \frac{\sin i}{\sin r}$$</p>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Display (8 Cols) -->
+                    <div class="lg:col-span-8 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-center">
+                        <div class="bg-slate-950 border-4 border-slate-900 rounded-2xl overflow-hidden shadow-inner flex justify-center">
+                            <canvas id="canvas-refr" class="w-full max-w-2xl h-[400px] bg-slate-950"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flip Card Quiz Section -->
+                <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900">
+                    <h3 class="font-display text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                        <span class="text-xl">💡</span> <span data-key="quiz_title">Test Your Understanding (Click to Flip)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Card 1 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyBlue text-white font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">🤔</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q_refr1">What happens to wave frequency as it crosses from deep to shallow water?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display" data-key="a_refr1_title">No Change!</p>
+                                    <p class="text-xs mt-2" data-key="a_refr1">Frequency depends only on the wave source. It remains constant during refraction!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyYellow text-slate-900 font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">🌅</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q_refr2">How do sea waves change direction as they approach a shoreline beach?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display" data-key="a_refr2_title">Bends Towards Shore</p>
+                                    <p class="text-xs mt-2" data-key="a_refr2">Because the shore is shallower, the waves refract, slow down, and bend to become parallel to the beach shape.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 4: DIFFRACTION -->
+            <section id="module-4" class="module-section hidden space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Control panel (4 Cols) -->
+                    <div class="lg:col-span-4 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block bg-joyPurple/20 text-joyPurple font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider mb-3 border-2 border-joyPurple" data-key="diff_tag">Spreading & Edges</span>
+                            <h2 class="font-display text-2xl font-black text-slate-900 mb-2" data-key="diff_title">Diffraction of Waves</h2>
+                            <p class="text-slate-600 mb-6" data-key="diff_desc">Watch waves pass through a barrier opening. Alter gap size (a) and wavelength (λ) to observe circular propagation.</p>
+                            
+                            <!-- Controls -->
+                            <div class="space-y-5">
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_gap_size">Gap Size (a)</span>
+                                        <span id="diff-gap-val" class="text-joyPurple">40px</span>
+                                    </div>
+                                    <input type="range" id="diff-gap" min="10" max="150" value="40" oninput="updateDiffractionParams()" class="w-full accent-joyPurple">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_wavelength">Wavelength (λ)</span>
+                                        <span id="diff-wave-val" class="text-joyPurple">25px</span>
+                                    </div>
+                                    <input type="range" id="diff-wave" min="15" max="50" value="25" oninput="updateDiffractionParams()" class="w-full accent-joyPurple">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Alert Note -->
+                        <div id="diff-alert-box" class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mt-6 text-sm text-amber-900 font-medium transition-all">
+                            <p class="font-bold mb-1"><i class="fa-solid fa-circle-exclamation text-joyYellow"></i> <span data-key="diff_cond_title">Condition for Strong Diffraction</span></p>
+                            <p class="text-xs" data-key="diff_cond_desc">When the gap size is equal to or smaller than the wavelength ($a \le \lambda$), wave spreading is highly curved and circular!</p>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Display (8 Cols) -->
+                    <div class="lg:col-span-8 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-center">
+                        <div class="bg-slate-950 border-4 border-slate-900 rounded-2xl overflow-hidden shadow-inner flex justify-center">
+                            <canvas id="canvas-diff" class="w-full max-w-2xl h-[400px] bg-slate-950"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flip Card Quiz Section -->
+                <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900">
+                    <h3 class="font-display text-2xl font-black text-slate-900 mb-6 flex items-center gap-2">
+                        <span class="text-xl">💡</span> <span data-key="quiz_title">Test Your Understanding (Click to Flip)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Card 1 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyPurple text-white font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">🚢</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q_diff1">Why are concrete harbor barriers built with narrow water openings?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display" data-key="a_diff1_title">Energy Dispersion</p>
+                                    <p class="text-xs mt-2" data-key="a_diff1">Narrow gaps cause strong diffraction, spreading the wave energy and creating calm waters inside the port zone.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="flip-card h-44 cursor-pointer" onclick="toggleFlip(this)">
+                            <div class="flip-card-inner relative w-full h-full text-center shadow-lg border-4 border-slate-900 rounded-2xl bg-joyPink text-white font-bold p-6 flex items-center justify-center">
+                                <div class="flip-card-front flex flex-col items-center justify-center">
+                                    <span class="text-3xl mb-1">📻</span>
+                                    <p class="text-sm sm:text-base px-2" data-key="q_diff2">Why do sound waves diffract much easier around corners than light waves?</p>
+                                </div>
+                                <div class="flip-card-back flex flex-col items-center justify-center p-4">
+                                    <p class="text-xl font-black font-display" data-key="a_diff2_title">Wavelength Match</p>
+                                    <p class="text-xs mt-2" data-key="a_diff2">Sound has a long wavelength similar to door or corner widths. Light has an ultra-short wavelength ($10^{-7}$m).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 5: INTERFERENCE -->
+            <section id="module-5" class="module-section hidden space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Control panel (4 Cols) -->
+                    <div class="lg:col-span-4 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div>
+                            <span class="inline-block bg-joyGreen/20 text-emerald-600 font-black px-4 py-1.5 rounded-full text-xs uppercase tracking-wider mb-3 border-2 border-joyGreen" data-key="int_tag">Superposition Patterns</span>
+                            <h2 class="font-display text-2xl font-black text-slate-900 mb-2" data-key="int_title">Interference of Waves</h2>
+                            <p class="text-slate-600 mb-6" data-key="int_desc">Two coherent wave sources overlap. Drag the virtual 🎤 microphone across the field to map constructive and destructive zones.</p>
+                            
+                            <!-- Controls -->
+                            <div class="space-y-5">
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_speaker_dist">Speaker Distance (a)</span>
+                                        <span id="int-dist-val" class="text-emerald-600">100px</span>
+                                    </div>
+                                    <input type="range" id="int-dist" min="50" max="150" value="100" oninput="updateInterferenceParams()" class="w-full accent-joyGreen">
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between font-bold mb-1">
+                                        <span data-key="ctrl_int_wavelength">Wavelength (λ)</span>
+                                        <span id="int-wave-val" class="text-emerald-600">30px</span>
+                                    </div>
+                                    <input type="range" id="int-wave" min="15" max="50" value="30" oninput="updateInterferenceParams()" class="w-full accent-joyGreen">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Sound Meter Dashboard Widget -->
+                        <div class="bg-indigo-50 border-4 border-slate-900 rounded-2xl p-4 mt-6">
+                            <h4 class="font-display font-black text-slate-800 text-sm mb-2 flex items-center justify-between">
+                                <span data-key="lbl_mic_reading">🎤 MIC LEVEL DETECTOR</span>
+                                <span id="mic-coordinates" class="font-mono text-[10px] text-slate-500">x:0, y:0</span>
+                            </h4>
+                            
+                            <!-- Progress Bar -->
+                            <div class="h-6 w-full bg-slate-200 rounded-full overflow-hidden border-2 border-slate-900 relative">
+                                <div id="sound-progress-bar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-75" style="width: 50%;"></div>
+                            </div>
+                            
+                            <div class="flex justify-between text-xs font-bold text-slate-600 mt-2">
+                                <span data-key="sound_soft">Soft (Node)</span>
+                                <span id="sound-percentage-txt">50%</span>
+                                <span data-key="sound_loud">Loud (Antinode)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulation Display (8 Cols) -->
+                    <div class="lg:col-span-8 bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-center relative">
+                        <div class="bg-slate-950 border-4 border-slate-900 rounded-2xl overflow-hidden shadow-inner flex justify-center relative">
+                            <canvas id="canvas-int" class="w-full max-w-2xl h-[400px] bg-slate-950 cursor-crosshair"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-500 font-bold mt-2 text-center" data-key="int_drag_instr">💡 Drag your finger or click & hover inside the field to move the sound receiver probe!</p>
+                    </div>
+                </div>
+
+                <!-- Live KSSM Calculations Widget -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Formulas Explain -->
+                    <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-display text-xl font-black text-slate-900 mb-4" data-key="int_math_title">Math of Sound Interference</h3>
+                            <p class="text-sm text-slate-600 mb-4" data-key="int_math_desc">In KSSM, we determine the distance between adjacent antinodes (loud lines) $x$ by modeling wave kinematics using parameters $a$, $x$, $D$ and $\lambda$.</p>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                                <div class="bg-slate-50 border-2 border-slate-200 p-3 rounded-2xl">
+                                    <p class="font-mono text-lg font-bold text-joyCoral">a</p>
+                                    <p class="text-[10px] text-slate-500" data-key="lbl_dist_sources">Speaker separation</p>
+                                </div>
+                                <div class="bg-slate-50 border-2 border-slate-200 p-3 rounded-2xl">
+                                    <p class="font-mono text-lg font-bold text-joyBlue">x</p>
+                                    <p class="text-[10px] text-slate-500" data-key="lbl_consec_loud">Distance between loud sounds</p>
+                                </div>
+                                <div class="bg-slate-50 border-2 border-slate-200 p-3 rounded-2xl">
+                                    <p class="font-mono text-lg font-bold text-joyPurple">D</p>
+                                    <p class="text-[10px] text-slate-500" data-key="lbl_perp_dist">Distance to observer</p>
+                                </div>
+                                <div class="bg-slate-50 border-2 border-slate-200 p-3 rounded-2xl">
+                                    <p class="font-mono text-lg font-bold text-joyGreen">λ</p>
+                                    <p class="text-[10px] text-slate-500" data-key="lbl_formula_wave">Wavelength</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Real Formula Display -->
+                        <div class="bg-slate-900 text-white rounded-2xl p-5 border-4 border-slate-900 mt-6 text-center font-mono">
+                            <p class="text-xl font-black text-slate-100">$$\lambda = \frac{a \cdot x}{D} \quad \implies \quad x = \frac{\lambda \cdot D}{a}$$</p>
+                        </div>
+                    </div>
+
+                    <!-- Calculator Tool -->
+                    <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-slate-900 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-display text-xl font-black text-slate-900 mb-4" data-key="calc_title">Quick Solver Tool</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-key="calc_a">Separation of Speakers, a (m)</label>
+                                    <input type="number" id="calc-input-a" value="2.0" step="0.1" oninput="solveInterferenceMath()" class="w-full border-2 border-slate-300 focus:border-slate-900 outline-none rounded-xl p-2.5 font-bold font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-key="calc_D">Distance from screen/observer, D (m)</label>
+                                    <input type="number" id="calc-input-D" value="5.0" step="0.1" oninput="solveInterferenceMath()" class="w-full border-2 border-slate-300 focus:border-slate-900 outline-none rounded-xl p-2.5 font-bold font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-key="calc_lambda">Wavelength, λ (m)</label>
+                                    <input type="number" id="calc-input-wave" value="0.5" step="0.05" oninput="solveInterferenceMath()" class="w-full border-2 border-slate-300 focus:border-slate-900 outline-none rounded-xl p-2.5 font-bold font-mono">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-joyCoral text-white rounded-2xl p-5 border-4 border-slate-900 mt-6 flex justify-between items-center shadow-[4px_4px_0px_#000]">
+                            <div>
+                                <p class="text-xs font-black uppercase tracking-wider text-coral-100" data-key="calc_output_lbl">Calculated fringe spacing (x)</p>
+                                <p class="font-display text-3xl font-black" id="calc-output-x">1.25 m</p>
+                            </div>
+                            <i class="fa-solid fa-square-poll-vertical text-5xl opacity-40"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MAIN APP CONTROLLER SCRIPT -->
+    <script>
+        // --- TRANSLATION TRANSLATION SYSTEM ---
+        const dictionary = {
+            en: {
+                title: "🌊 KSSM Wave Explorer",
+                subtitle: "Interactive bilingual physics companion for secondary schools",
+                langBtn: "Bahasa Melayu",
+                tab1: "1. Fundamentals",
+                tab2: "2. Reflection",
+                tab3: "3. Refraction",
+                tab4: "4. Diffraction",
+                tab5: "5. Interference",
+
+                // Module 1
+                f_tag: "Theory & Parameters",
+                f_title: "Fundamental of Waves",
+                f_desc: "Explore displacement changes across distance and time, and compare static/progressive waves.",
+                ctrl_amp: "Amplitude (A)",
+                ctrl_freq: "Frequency (f)",
+                ctrl_type: "Wave Nature",
+                f_prog: "Progressive",
+                f_stat: "Standing",
+                f_note: "Hint: Progressive waves transfer energy, whereas standing (stationary) waves retain energy!",
+                f_graph1: "Displacement-Distance Graph (y-x)",
+                f_graph1_sub: "Shows wave profile at a frozen instant of time. Use to find wavelength (λ).",
+                f_graph2: "Displacement-Time Graph (y-t)",
+                f_graph2_sub: "Follows particle P as it moves up and down over time. Use to find Period (T).",
+
+                // Quiz Module 1
+                quiz_title: "Test Your Understanding (Click to Flip)",
+                q1: "What is the formula linking velocity, frequency and wavelength?",
+                a1: "Velocity = Frequency x Wavelength. Standard KSSM wave speed formula!",
+                q2: "How is period (T) related to frequency (f)?",
+                a2: "Period is the reciprocal of frequency. Time taken for one complete wave.",
+                q3: "What type of wave is generated on a plucked guitar string?",
+                a3_title: "Standing Wave",
+                a3: "A standing wave (gelombang pegun) is formed due to reflection and superposition of wave packets at boundaries.",
+
+                // Module 2
+                refl_tag: "Boundary Interactions",
+                refl_title: "Reflection of Waves",
+                refl_desc: "Observe how wave crests respond to a hard barrier. Adjust the barrier angle to test the Law of Reflection (i = r).",
+                ctrl_barrier_angle: "Barrier Angle",
+                lbl_incident: "Incident Wavefronts",
+                lbl_reflected: "Reflected Wavefronts",
+                lbl_normal: "Normal Line",
+                refl_law_note: "Remember: Frequency, wavelength, and wave speed remain unchanged after reflection!",
+                q_refl1: "Which parameters change after reflection occurs?",
+                a_refl1_title: "Only Direction!",
+                a_refl1: "Frequency, speed, and wavelength stay identical because the medium has not changed.",
+                q_refl2: "Give a practical example of reflection in sound waves.",
+                a_refl2_title: "Echo & Sonar",
+                a_refl2: "Echos from high walls and SONAR used by ships to map the sea bed are both based on sound wave reflections.",
+
+                // Module 3
+                refr_tag: "Medium Transitions",
+                refr_title: "Refraction of Waves",
+                refr_desc: "Observe how waves change direction, speed, and wavelength when propagating through varying environments.",
+                refr_desc_water: "Observe waves travel from a deep region into a shallower boundary. Watch wavefronts compress, slow down, and change direction.",
+                refr_desc_sound_day: "During a hot day, air near the ground is hot and sound travels faster. This causes sound wavefronts to bend upwards away from the ground, making sound travel shorter distances horizontally.",
+                refr_desc_sound_night: "At night, air near the ground is cool and sound travels slower. Sound wavefronts bend downwards towards the ground, causing distant sound to be heard much louder and clearer.",
+                refr_mode_water: "Water Waves",
+                refr_mode_sound_day: "Sound (Day)",
+                refr_mode_sound_night: "Sound (Night)",
+                ctrl_incident_angle_lbl: "Angle of Incidence (i)",
+                ctrl_shallow_depth: "Shallow Region Depth",
+                refr_speed_law: "Depth vs Speed & Wavelength:",
+                refr_speed_desc: "Shorter depth causes slower wave speed and shorter wavelength ($v \\propto d$ and $\\lambda \\propto d$). Frequency remains unchanged ($f = \\text{const}$).",
+                sound_refr_day_title: "Daytime Refraction",
+                sound_refr_day_desc: "Warm air is near the ground. Cool air is high up. Sound rays curve upward away from the listener.",
+                sound_refr_night_title: "Nighttime Refraction",
+                sound_refr_night_desc: "Cool air is near the ground. Warm air is high up (Temperature Inversion). Sound rays curve downward, returning to the listener's level.",
+                
+                q_refr1: "What happens to wave frequency as it crosses from deep to shallow water?",
+                a_refr1_title: "No Change!",
+                a_refr1: "Frequency depends only on the wave source. It remains constant during refraction!",
+                q_refr2: "How do sea waves change direction as they approach a shoreline beach?",
+                a_refr2_title: "Bends Towards Shore",
+                a_refr2: "Because the shore is shallower, the waves refract, slow down, and bend to become parallel to the beach shape.",
+
+                // Module 4
+                diff_tag: "Spreading & Edges",
+                diff_title: "Diffraction of Waves",
+                diff_desc: "Watch waves pass through a barrier opening. Alter gap size (a) and wavelength (λ) to observe circular propagation.",
+                ctrl_gap_size: "Gap Size (a)",
+                ctrl_wavelength: "Wavelength (λ)",
+                diff_cond_title: "Condition for Strong Diffraction",
+                diff_cond_desc: "When the gap size is equal to or smaller than the wavelength (a ≤ λ), wave spreading is highly curved and circular!",
+                q_diff1: "Why are concrete harbor barriers built with narrow water openings?",
+                a_diff1_title: "Energy Dispersion",
+                a_diff1: "Narrow gaps cause strong diffraction, spreading the wave energy and creating calm waters inside the port zone.",
+                q_diff2: "Why do sound waves diffract much easier around corners than light waves?",
+                a_diff2_title: "Wavelength Match",
+                a_diff2: "Sound has a long wavelength similar to door or corner widths. Light has an ultra-short wavelength (10⁻⁷ m).",
+
+                // Module 5
+                int_tag: "Corak Superposisi",
+                int_title: "Interference of Waves",
+                int_desc: "Two coherent wave sources overlap. Drag the virtual 🎤 microphone across the field to map constructive and destructive zones.",
+                ctrl_speaker_dist: "Speaker Distance (a)",
+                ctrl_int_wavelength: "Wavelength (λ)",
+                lbl_mic_reading: "🎤 MIC LEVEL DETECTOR",
+                sound_soft: "Soft (Node)",
+                sound_loud: "Loud (Antinode)",
+                int_drag_instr: "💡 Drag your finger or click & hover inside the field to move the sound receiver probe!",
+                int_math_title: "Math of Sound Interference",
+                int_math_desc: "In KSSM, we determine the distance between adjacent antinodes (loud lines) x by modeling wave kinematics using parameters a, x, D and λ.",
+                lbl_dist_sources: "Speaker separation",
+                lbl_consec_loud: "Distance between loud sounds",
+                lbl_perp_dist: "Distance to observer",
+                lbl_formula_wave: "Wavelength",
+                calc_title: "Quick Solver Tool",
+                calc_a: "Separation of Speakers, a (m)",
+                calc_D: "Distance from screen/observer, D (m)",
+                calc_lambda: "Wavelength, λ (m)",
+                calc_output_lbl: "Calculated fringe spacing (x)"
+            },
+            ms: {
+                title: "🌊 Eksplorasi Gelombang KSSM",
+                subtitle: "Pembantu fizik interaktif dwibahasa untuk sekolah menengah",
+                langBtn: "English",
+                tab1: "1. Asas",
+                tab2: "2. Pantulan",
+                tab3: "3. Pembiasan",
+                tab4: "4. Pembelauan",
+                tab5: "5. Interferens",
+
+                // Module 1
+                f_tag: "Teori & Parameter",
+                f_title: "Asas Gelombang",
+                f_desc: "Terokai perubahan sesaran terhadap jarak dan masa, dan bandingkan gelombang pegun/progresif.",
+                ctrl_amp: "Amplitud (A)",
+                ctrl_freq: "Frekuensi (f)",
+                ctrl_type: "Sifat Gelombang",
+                f_prog: "Progresif",
+                f_stat: "Pegun",
+                f_note: "Pembayang: Gelombang progresif memindahkan tenaga, manakala gelombang pegun (stationary) mengekalkan tenaga!",
+                f_graph1: "Graf Sesaran-Jarak (y-x)",
+                f_graph1_sub: "Menunjukkan profil gelombang pada satu ketika masa. Digunakan untuk mencari panjang gelombang (λ).",
+                f_graph2: "Graf Sesaran-Masa (y-t)",
+                f_graph2_sub: "Mengikuti zarah P ketika ia bergerak ke atas dan ke bawah mengikut masa. Digunakan untuk mencari Tempoh (T).",
+
+                // Quiz Module 1
+                quiz_title: "Uji Kefahaman Anda (Klik untuk Putar)",
+                q1: "Apakah formula yang menghubungkan halaju, frekuensi dan panjang gelombang?",
+                a1: "Halaju = Frekuensi x Panjang Gelombang. Formula kelajuan gelombang standard KSSM!",
+                q2: "Bagaimanakah tempoh (T) berkait rapat dengan frekuensi (f)?",
+                a2: "Tempoh adalah salingan frekuensi. Masa yang diambil untuk satu gelombang lengkap.",
+                q3: "Apakah jenis gelombang yang dihasilkan apabila tali gitar dipetik?",
+                a3_title: "Gelombang Pegun",
+                a3: "Gelombang pegun (standing wave) terhasil disebabkan pantulan dan superposisi gelombang di sempadan tetap.",
+
+                // Module 2
+                refl_tag: "Interaksi Sempadan",
+                refl_title: "Pantulan Gelombang",
+                refl_desc: "Perhatikan profil puncak gelombang bertindak balas dengan penghalang keras. Laraskan sudut untuk menguji Hukum Pantulan (i = r).",
+                ctrl_barrier_angle: "Sudut Penghalang",
+                lbl_incident: "Muka Gelombang Tuju",
+                lbl_reflected: "Muka Gelombang Pantulan",
+                lbl_normal: "Garis Normal",
+                refl_law_note: "Ingat: Frekuensi, panjang gelombang, dan kelajuan gelombang tidak berubah selepas pantulan berlaku!",
+                q_refl1: "Parameter manakah yang berubah selepas pantulan berlaku?",
+                a_refl1_title: "Hanya Arah!",
+                a_refl1: "Frekuensi, kelajuan, dan panjang gelombang tetap sama kerana tiada perubahan medium berlaku.",
+                q_refl2: "Berikan contoh praktikal pantulan dalam gelombang bunyi.",
+                a_refl2_title: "Gema & Sonar",
+                a_refl2: "Gema dari dinding tinggi dan sistem SONAR kapal untuk memetakan dasar laut adalah berdasarkan pantulan gelombang bunyi.",
+
+                // Module 3
+                refr_tag: "Peralihan Medium",
+                refr_title: "Pembiasan Gelombang",
+                refr_desc: "Perhatikan bagaimana gelombang berubah arah, laju, dan panjang gelombang semasa merambat melalui persekitaran yang berbeza.",
+                refr_desc_water: "Perhatikan gelombang merambat dari kawasan dalam ke sempadan lebih cetek. Lihat muka gelombang menjadi rapat, perlahan, dan membias.",
+                refr_desc_sound_day: "Pada waktu siang, udara berhampiran darat adalah panas (laju bunyi tinggi). Ini menyebabkan muka gelombang bunyi membias ke atas menjauhi darat, menyebabkan bunyi sukar merambat jauh secara mendatar.",
+                refr_desc_sound_night: "Pada waktu malam, udara berhampiran darat adalah sejuk (laju bunyi perlahan). Muka gelombang membias ke bawah menghala ke darat, menyebabkan bunyi kedengaran sangat jelas dan kuat dari jauh.",
+                refr_mode_water: "Gelombang Air",
+                refr_mode_sound_day: "Bunyi (Siang)",
+                refr_mode_sound_night: "Bunyi (Malam)",
+                ctrl_incident_angle_lbl: "Sudut Tuju (i)",
+                ctrl_shallow_depth: "Kedalaman Kawasan Cetek",
+                refr_speed_law: "Kedalaman vs Kelajuan & P. Gelombang:",
+                refr_speed_desc: "Kedalaman air yang cetek menyebabkan halaju gelombang dan panjang gelombang berkurang ($v \\propto d$ dan $\\lambda \\propto d$). Frekuensi kekal malar ($f = \\text{pemalar}$).",
+                sound_refr_day_title: "Pembiasan Siang",
+                sound_refr_day_desc: "Udara panas di bawah. Udara sejuk di atas. Garis sinar bunyi melengkung ke atas menjauhi pendengar.",
+                sound_refr_night_title: "Pembiasan Malam",
+                sound_refr_night_desc: "Udara sejuk di bawah. Udara panas di atas (Songsangan Suhu). Garis sinar bunyi melengkung ke bawah kembali ke arah pendengar.",
+                
+                q_refr1: "Apakah yang berlaku pada frekuensi gelombang semasa merambat dari air dalam ke cetek?",
+                a_refr1_title: "Tiada Perubahan!",
+                a_refr1: "Frekuensi bergantung hanya kepada sumber gelombang asal. Nilainya kekal malar semasa pembiasan!",
+                q_refr2: "Bagaimanakah gelombang laut berubah arah apabila menghampiri pantai?",
+                a_refr2_title: "Membias ke Arah Pantai",
+                a_refr2: "Sebab pantai lebih cetek, gelombang membiaskan kelajuan, menjadi perlahan, dan melengkung agar selari dengan garis pantai.",
+
+                // Module 4
+                diff_tag: "Penyebaran & Penjuru",
+                diff_title: "Pembelauan Gelombang",
+                diff_desc: "Saksikan gelombang melalui bukaan penghalang. Ubah saiz celah (a) dan panjang gelombang (λ) untuk memerhati penyebaran membulat.",
+                ctrl_gap_size: "Saiz Celah (a)",
+                ctrl_wavelength: "Panjang Gelombang (λ)",
+                diff_cond_title: "Syarat Pembelauan Ketara",
+                diff_cond_desc: "Apabila saiz celah adalah sama dengan atau lebih kecil daripada panjang gelombang (a ≤ λ), penyebaran gelombang adalah membulat ketara!",
+                q_diff1: "Mengapakah benteng pelabuhan konkrit dibina dengan laluan air yang sempit?",
+                a_diff1_title: "Penyebaran Tenaga",
+                a_diff1: "Celah sempit menghasilkan pembelauan ketara, menyebarkan tenaga gelombang lalu mewujudkan air tenang di dalam pelabuhan.",
+                q_diff2: "Mengapakah gelombang bunyi lebih mudah membelau di penjuru berbanding gelombang cahaya?",
+                a_diff2_title: "Padanan Panjang Gelombang",
+                a_diff2: "Bunyi mempunyai panjang gelombang panjang yang hampir sama dengan lebar pintu/penjuru. Cahaya pula terlalu pendek (10⁻⁷ m).",
+
+                // Module 5
+                int_tag: "Corak Superposisi",
+                int_title: "Interferens Gelombang",
+                int_desc: "Dua sumber koheren bertindih. Seret mikrofon 🎤 maya di seluruh medan untuk memetakan kawasan membina dan memusnah.",
+                ctrl_speaker_dist: "Jarak Pembesar Suara (a)",
+                ctrl_int_wavelength: "Panjang Gelombang (λ)",
+                lbl_mic_reading: "🎤 DETEKTOR TAHAP MIKROFON",
+                sound_soft: "Perlahan (Nod)",
+                sound_loud: "Kuat (Antinod)",
+                int_drag_instr: "💡 Seret jari anda atau klik & layangkan tetikus di dalam medan untuk menggerakkan probe penerima bunyi!",
+                int_math_title: "Matematik Interferens Bunyi",
+                int_math_desc: "Dalam KSSM, kita menentukan jarak antara antinod berturutan (garis bunyi kuat) x dengan memodelkan kinematik gelombang menggunakan parameter a, x, D dan λ.",
+                lbl_dist_sources: "Pemisahan sumber",
+                lbl_consec_loud: "Jarak antara bunyi kuat",
+                lbl_perp_dist: "Jarak ke pemerhati",
+                lbl_formula_wave: "Panjang gelombang",
+                calc_title: "Alat Pengira Pantas",
+                calc_a: "Pemisahan Pembesar Suara, a (m)",
+                calc_D: "Jarak dari skrin/pemerhati, D (m)",
+                calc_lambda: "Panjang gelombang, λ (m)",
+                calc_output_lbl: "Pemisahan pinggir dikira (x)"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ms' : 'en';
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            const langData = dictionary[currentLang];
+            
+            // Header
+            document.getElementById('app-title').innerText = langData.title;
+            document.getElementById('app-subtitle').innerText = langData.subtitle;
+            document.getElementById('lang-btn-text').innerText = langData.langBtn;
+
+            // Elements with data-key
+            const elements = document.querySelectorAll('[data-key]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (langData[key]) {
+                    el.innerHTML = langData[key];
+                }
+            });
+
+            // Update parameters display with translated labels
+            updateFundParams();
+            updateReflectionAngle();
+            updateRefractionDepth();
+            updateDiffractionParams();
+            updateInterferenceParams();
+            solveInterferenceMath();
+        }
+
+        // --- NAVIGATION CONTROLLER ---
+        function switchTab(tabId) {
+            // Hide all modules
+            document.querySelectorAll('.module-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+            // Show target
+            document.getElementById(`module-${tabId}`).classList.remove('hidden');
+
+            // Update Tab button states
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-6 py-3 rounded-2xl font-display font-black text-lg transition-all border-4 border-slate-900 shadow-[4px_4px_0px_#000] translate-x-0 translate-y-0 bg-white text-slate-700 hover:bg-slate-100";
+            });
+
+            const activeColorMap = {
+                1: 'bg-joyPink text-white',
+                2: 'bg-joyCoral text-white',
+                3: 'bg-joyBlue text-white',
+                4: 'bg-joyPurple text-white',
+                5: 'bg-joyGreen text-slate-900',
+            };
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.className = `tab-btn px-6 py-3 rounded-2xl font-display font-black text-lg transition-all border-4 border-slate-900 shadow-[4px_4px_0px_#000] translate-x-0 translate-y-0 ${activeColorMap[tabId]}`;
+
+            // Force recalculate bounding box geometry now that elements are rendered visible!
+            setupCanvasResolutions();
+        }
+
+        // --- FLIP CARD CONTROLLER ---
+        function toggleFlip(card) {
+            const inner = card.querySelector('.flip-card-inner');
+            inner.classList.toggle('flip-card-flipped');
+        }
+
+        // --- STATE MANAGEMENT ---
+        let fundState = {
+            amp: 50,
+            freq: 2,
+            isStanding: false,
+        };
+
+        let reflState = {
+            angle: 45
+        };
+
+        let refrState = {
+            mode: 'water', // 'water', 'sound-day', 'sound-night'
+            depth: 50,
+            incidentAngle: 35
+        };
+
+        let diffState = {
+            gap: 40,
+            wave: 25
+        };
+
+        let intState = {
+            dist: 100,
+            wave: 30,
+            micX: 320,
+            micY: 200,
+            isDragging: false
+        };
+
+        // --- CANVAS DYNAMIC RESIZING AND GUARDBOX SECURITY ---
+        function checkCanvasSize(canvas) {
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                const w = Math.floor(rect.width);
+                const h = Math.floor(rect.height);
+                if (canvas.width !== w || canvas.height !== h) {
+                    canvas.width = w;
+                    canvas.height = h;
+                }
+            }
+        }
+
+        const fundCanvas1 = document.getElementById('canvas-fund-1');
+        const fundCanvas2 = document.getElementById('canvas-fund-2');
+        const fCtx1 = fundCanvas1.getContext('2d');
+        const fCtx2 = fundCanvas2.getContext('2d');
+
+        function setupCanvasResolutions() {
+            [fundCanvas1, fundCanvas2, document.getElementById('canvas-refl'), document.getElementById('canvas-refr'), document.getElementById('canvas-diff'), document.getElementById('canvas-int')].forEach(canvas => {
+                if (canvas) {
+                    checkCanvasSize(canvas);
+                }
+            });
+        }
+
+        // --- SIMULATOR 1: FUNDAMENTALS ---
+        function updateFundParams() {
+            const ampVal = document.getElementById('f-amp').value;
+            const freqVal = document.getElementById('f-freq').value;
+            fundState.amp = Number(ampVal);
+            fundState.freq = Number(freqVal);
+
+            document.getElementById('f-amp-val').innerText = fundState.amp;
+            document.getElementById('f-freq-val').innerText = fundState.freq + " Hz";
+        }
+
+        function setStanding(val) {
+            fundState.isStanding = val;
+            const btnProg = document.getElementById('btn-prog');
+            const btnStand = document.getElementById('btn-stand');
+            if (val) {
+                btnProg.className = "bg-white text-slate-700 font-extrabold py-2.5 px-4 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#000] active:translate-y-[2px] hover:bg-slate-100 transition-all";
+                btnStand.className = "bg-joyPink text-white font-extrabold py-2.5 px-4 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#000] active:translate-y-[2px] transition-all";
+            } else {
+                btnProg.className = "bg-joyPink text-white font-extrabold py-2.5 px-4 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#000] active:translate-y-[2px] transition-all";
+                btnStand.className = "bg-white text-slate-700 font-extrabold py-2.5 px-4 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#000] active:translate-y-[2px] hover:bg-slate-100 transition-all";
+            }
+        }
+
+        let timeFund = 0;
+        function drawFundamentals() {
+            // Dynamic Size Check
+            checkCanvasSize(fundCanvas1);
+            checkCanvasSize(fundCanvas2);
+
+            const w = fundCanvas1.width;
+            const h = fundCanvas1.height;
+            const w2 = fundCanvas2.width;
+            const h2 = fundCanvas2.height;
+
+            // Safe Guard against 0 size canvas logic exceptions
+            if (w === 0 || h === 0 || w2 === 0 || h2 === 0) return;
+
+            timeFund += 0.04 * fundState.freq;
+            const midY = h / 2;
+            const k = 0.04; // wavenumber
+
+            fCtx1.clearRect(0, 0, w, h);
+            fCtx2.clearRect(0, 0, w2, h2);
+
+            // Helper to draw grid axis
+            const drawGrid = (ctx, canvasW, canvasH, labelX, labelY) => {
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < canvasW; i += 40) {
+                    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvasH); ctx.stroke();
+                }
+                for (let i = 0; i < canvasH; i += 40) {
+                    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvasW, i); ctx.stroke();
+                }
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(canvasW, midY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(40, 0); ctx.lineTo(40, canvasH); ctx.stroke();
+                
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(labelY, 48, 20);
+                ctx.fillText(labelX, canvasW - 60, midY - 10);
+            };
+
+            drawGrid(fCtx1, w, h, 'x (cm)', 'y (cm)');
+            drawGrid(fCtx2, w2, h2, 't (s)', 'y (cm)');
+
+            // Wave profile drawing
+            fCtx1.beginPath();
+            fCtx1.strokeStyle = '#38bdf8';
+            fCtx1.lineWidth = 4.5;
+            for (let x = 40; x < w; x++) {
+                let y = 0;
+                if (fundState.isStanding) {
+                    y = fundState.amp * Math.sin(k * (x - 40)) * Math.cos(timeFund);
+                } else {
+                    y = fundState.amp * Math.sin(k * (x - 40) - timeFund);
+                }
+                fCtx1.lineTo(x, midY - y);
+            }
+            fCtx1.stroke();
+
+            // Draw Particle P on Displacement-Distance
+            const pX = 140;
+            let pY = fundState.isStanding ? fundState.amp * Math.sin(k * (pX - 40)) * Math.cos(timeFund) : fundState.amp * Math.sin(k * (pX - 40) - timeFund);
+            
+            fCtx1.beginPath();
+            fCtx1.arc(pX, midY - pY, 8, 0, 2 * Math.PI);
+            fCtx1.fillStyle = '#ff5e5b';
+            fCtx1.fill();
+            fCtx1.lineWidth = 2;
+            fCtx1.strokeStyle = '#ffffff';
+            fCtx1.stroke();
+            fCtx1.fillStyle = '#ff5e5b';
+            fCtx1.font = 'bold 16px sans-serif';
+            fCtx1.fillText("P", pX - 5, midY - pY - 15);
+
+            // Drawing Displacement-Time Graph history for P
+            fCtx2.beginPath();
+            fCtx2.strokeStyle = '#ff5e5b';
+            fCtx2.lineWidth = 4.5;
+            for (let tPlot = 40; tPlot < w2; tPlot++) {
+                let historicalTime = timeFund - (w2 - tPlot) * 0.04;
+                let histY = fundState.isStanding ? fundState.amp * Math.sin(k * (pX - 40)) * Math.cos(historicalTime) : fundState.amp * Math.sin(k * (pX - 40) - historicalTime);
+                fCtx2.lineTo(tPlot, midY - histY);
+            }
+            fCtx2.stroke();
+
+            // Draw indicator dots on history
+            fCtx2.beginPath();
+            fCtx2.arc(w2 - 10, midY - pY, 8, 0, 2 * Math.PI);
+            fCtx2.fillStyle = '#4cd964';
+            fCtx2.fill();
+            fCtx2.lineWidth = 2;
+            fCtx2.strokeStyle = '#ffffff';
+            fCtx2.stroke();
+        }
+
+        // --- SIMULATOR 2: REFLECTION ---
+        function updateReflectionAngle() {
+            reflState.angle = Number(document.getElementById('refl-angle').value);
+            document.getElementById('refl-angle-val').innerText = reflState.angle + "°";
+        }
+
+        const reflCanvas = document.getElementById('canvas-refl');
+        const rCtx = reflCanvas.getContext('2d');
+        let timeRefl = 0;
+
+        function drawReflection() {
+            checkCanvasSize(reflCanvas);
+            const w = reflCanvas.width;
+            const h = reflCanvas.height;
+
+            if (w === 0 || h === 0) return;
+
+            timeRefl += 1.2;
+            const cx = w / 2;
+            const cy = h / 2 + 50;
+            const radAngle = (reflState.angle * Math.PI) / 180;
+
+            rCtx.clearRect(0, 0, w, h);
+
+            // Draw barrier & normal line
+            rCtx.save();
+            rCtx.translate(cx, cy);
+            rCtx.rotate(radAngle);
+            
+            // Barrier wall
+            rCtx.fillStyle = '#475569';
+            rCtx.fillRect(-220, 0, 440, 16);
+            rCtx.strokeStyle = '#cbd5e1';
+            rCtx.lineWidth = 2;
+            rCtx.strokeRect(-220, 0, 440, 16);
+
+            // Normal line
+            rCtx.beginPath();
+            rCtx.setLineDash([6, 6]);
+            rCtx.moveTo(0, 0);
+            rCtx.lineTo(0, -180);
+            rCtx.strokeStyle = '#94a3b8';
+            rCtx.lineWidth = 2.5;
+            rCtx.stroke();
+            rCtx.setLineDash([]);
+            rCtx.restore();
+
+            // Draw Incident Wavefronts (Moving downwards from top left towards target center)
+            rCtx.save();
+            rCtx.translate(cx, cy);
+            
+            // Incident lines propagation math
+            const spacing = 22;
+            rCtx.strokeStyle = '#38bdf8';
+            rCtx.lineWidth = 2.5;
+            for (let i = 0; i < 12; i++) {
+                let propDist = -250 + ((timeRefl + i * spacing) % 250);
+                if (propDist < 0) {
+                    rCtx.beginPath();
+                    rCtx.moveTo(-120, propDist);
+                    rCtx.lineTo(120, propDist);
+                    rCtx.stroke();
+                }
+            }
+
+            // Draw Incident Path Vector (Arrow direction)
+            rCtx.beginPath();
+            rCtx.moveTo(-40, -200);
+            rCtx.lineTo(0, 0);
+            rCtx.strokeStyle = '#0284c7';
+            rCtx.lineWidth = 4;
+            rCtx.stroke();
+            rCtx.restore();
+
+            // Reflected Wavefronts
+            rCtx.save();
+            rCtx.translate(cx, cy);
+            rCtx.rotate(2 * radAngle); // Reflection angle mapping
+            rCtx.strokeStyle = '#ff5e5b';
+            rCtx.lineWidth = 2.5;
+            for (let i = 0; i < 12; i++) {
+                let propDist = - ((timeRefl + i * spacing) % 250);
+                if (propDist < 0) {
+                    rCtx.beginPath();
+                    rCtx.moveTo(-120, propDist);
+                    rCtx.lineTo(120, propDist);
+                    rCtx.stroke();
+                }
+            }
+
+            // Reflected Path Vector (Arrow direction)
+            rCtx.beginPath();
+            rCtx.moveTo(0, 0);
+            rCtx.lineTo(0, -200);
+            rCtx.strokeStyle = '#e11d48';
+            rCtx.lineWidth = 4;
+            rCtx.stroke();
+            rCtx.restore();
+        }
+
+        // --- SIMULATOR 3: REFRACTION ---
+        function setRefractionMode(mode) {
+            refrState.mode = mode;
+            
+            // Update Tab/Button highlight
+            const btnWater = document.getElementById('btn-refr-water');
+            const btnSoundDay = document.getElementById('btn-refr-sound-day');
+            const btnSoundNight = document.getElementById('btn-refr-sound-night');
+            
+            btnWater.className = "bg-transparent text-slate-600 hover:bg-slate-200 text-xs font-black py-2 rounded-xl transition-all";
+            btnSoundDay.className = "bg-transparent text-slate-600 hover:bg-slate-200 text-xs font-black py-2 rounded-xl transition-all";
+            btnSoundNight.className = "bg-transparent text-slate-600 hover:bg-slate-200 text-xs font-black py-2 rounded-xl transition-all";
+
+            const waterControls = document.getElementById('refr-water-controls');
+            const soundControls = document.getElementById('refr-sound-controls');
+            const descText = document.getElementById('refr-description-text');
+            const langData = dictionary[currentLang];
+
+            if (mode === 'water') {
+                btnWater.className = "bg-joyBlue text-white text-xs font-black py-2 rounded-xl transition-all";
+                waterControls.classList.remove('hidden');
+                soundControls.classList.add('hidden');
+                descText.innerText = langData.refr_desc_water;
+            } else if (mode === 'sound-day') {
+                btnSoundDay.className = "bg-joyYellow text-slate-900 text-xs font-black py-2 rounded-xl transition-all";
+                waterControls.classList.add('hidden');
+                soundControls.classList.remove('hidden');
+                descText.innerText = langData.refr_desc_sound_day;
+            } else if (mode === 'sound-night') {
+                btnSoundNight.className = "bg-joyPurple text-white text-xs font-black py-2 rounded-xl transition-all";
+                waterControls.classList.add('hidden');
+                soundControls.classList.remove('hidden');
+                descText.innerText = langData.refr_desc_sound_night;
+            }
+        }
+
+        function updateRefractionParamsFromUI() {
+            refrState.depth = Number(document.getElementById('refr-depth').value);
+            reflState.incidentAngle = Number(document.getElementById('refl-angle')?.value || 45); // legacy protect
+            
+            // We now use an independent incident angle input specifically for refraction!
+            const incAngleInput = document.getElementById('refr-incident-angle-input');
+            if (incAngleInput) {
+                refrState.incidentAngle = Number(incAngleInput.value);
+                document.getElementById('refr-incident-angle-input').value = refrState.incidentAngle;
+                document.getElementById('refr-angle-lbl-val').innerText = refrState.incidentAngle + "°";
+            }
+
+            document.getElementById('refr-depth-val').innerText = refrState.depth + "%";
+
+            // Update numerical comparison widgets
+            const v1 = 1.60;
+            const l1 = 34.0;
+            const speedRatio = (refrState.depth / 100) * 0.55 + 0.35; // index multiplier [0.35 - 0.90]
+            const v2 = v1 * speedRatio;
+            const l2 = l1 * speedRatio;
+
+            document.getElementById('v1-readout').innerText = v1.toFixed(2);
+            document.getElementById('l1-readout').innerText = l1.toFixed(1);
+            document.getElementById('v2-readout').innerText = v2.toFixed(2);
+            document.getElementById('l2-readout').innerText = l2.toFixed(1);
+        }
+
+        function updateRefractionDepth() {
+            // Forward compat shell
+            updateRefractionParamsFromUI();
+        }
+
+        const refrCanvas = document.getElementById('canvas-refr');
+        const refrCtx = refrCanvas.getContext('2d');
+        let timeRefr = 0;
+
+        function drawRefraction() {
+            checkCanvasSize(refrCanvas);
+            const w = refrCanvas.width;
+            const h = refrCanvas.height;
+
+            if (w === 0 || h === 0) return;
+
+            timeRefr += 0.9;
+            const boundaryY = h / 2 + 10;
+            const cx = w / 2;
+
+            refrCtx.clearRect(0, 0, w, h);
+
+            if (refrState.mode === 'water') {
+                // WATER WAVES REFRACTION VISUALIZER
+                // Draw background zones
+                refrCtx.fillStyle = '#0f172a'; // Deep water base
+                refrCtx.fillRect(0, 0, w, boundaryY);
+                
+                const density = Math.floor(15 + (100 - refrState.depth) * 0.45);
+                refrCtx.fillStyle = `rgb(${density}, ${density + 25}, ${density + 60})`; 
+                refrCtx.fillRect(0, boundaryY, w, h - boundaryY);
+
+                // Snell's Calculations
+                const angleIncRad = (refrState.incidentAngle * Math.PI) / 180;
+                const refRatio = (refrState.depth / 100) * 0.55 + 0.35; // index multiplier [0.35 - 0.90]
+                
+                const angleRefRad = Math.asin(Math.sin(angleIncRad) * refRatio);
+                const angleRefDeg = Math.round((angleRefRad * 180) / Math.PI);
+
+                // Helper parameters
+                const lambda1 = 34;
+                const speed1 = 1.6;
+                const lambda2 = lambda1 * refRatio;
+                const speed2 = speed1 * refRatio;
+
+                // 1. Draw Deep wavefronts (flowing from top left to boundary)
+                refrCtx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+                refrCtx.lineWidth = 3;
+                
+                for (let i = -15; i < 20; i++) {
+                    let dist = (timeRefr * speed1 + i * lambda1) % (lambda1 * 20);
+                    let interceptX = cx - (boundaryY * Math.tan(angleIncRad)) + dist / Math.cos(angleIncRad);
+
+                    let dx = 300 * Math.cos(angleIncRad);
+                    let dy = 300 * Math.sin(angleIncRad);
+
+                    refrCtx.save();
+                    refrCtx.beginPath();
+                    refrCtx.rect(0, 0, w, boundaryY);
+                    refrCtx.clip();
+
+                    refrCtx.beginPath();
+                    refrCtx.moveTo(interceptX - dx, boundaryY - dy);
+                    refrCtx.lineTo(interceptX + dx, boundaryY + dy);
+                    refrCtx.stroke();
+                    refrCtx.restore();
+                }
+
+                // 2. Draw Shallow wavefronts
+                refrCtx.strokeStyle = 'rgba(52, 211, 153, 0.45)';
+                for (let i = -15; i < 25; i++) {
+                    const lambdaB = lambda1 / Math.sin(angleIncRad);
+                    let shift = (timeRefr * speed1 / Math.sin(angleIncRad));
+                    let boundaryX = cx + (i * lambdaB) + shift % lambdaB;
+
+                    let dx = 300 * Math.cos(angleRefRad);
+                    let dy = 300 * Math.sin(angleRefRad);
+
+                    refrCtx.save();
+                    refrCtx.beginPath();
+                    refrCtx.rect(0, boundaryY, w, h - boundaryY);
+                    refrCtx.clip();
+
+                    refrCtx.beginPath();
+                    refrCtx.moveTo(boundaryX - dx, boundaryY - dy);
+                    refrCtx.lineTo(boundaryX + dx, boundaryY + dy);
+                    refrCtx.stroke();
+                    refrCtx.restore();
+                }
+
+                // 3. Draw Boundary Line
+                refrCtx.beginPath();
+                refrCtx.moveTo(0, boundaryY);
+                refrCtx.lineTo(w, boundaryY);
+                refrCtx.strokeStyle = '#f8fafc';
+                refrCtx.lineWidth = 4;
+                refrCtx.stroke();
+
+                // 4. Draw Normal Line (vertical)
+                refrCtx.beginPath();
+                refrCtx.setLineDash([6, 6]);
+                refrCtx.moveTo(cx, 40);
+                refrCtx.lineTo(cx, h - 40);
+                refrCtx.strokeStyle = '#94a3b8';
+                refrCtx.lineWidth = 2;
+                refrCtx.stroke();
+                refrCtx.setLineDash([]);
+
+                // 5. Draw Incident and Refracted Rays
+                refrCtx.lineWidth = 4.5;
+                
+                // Incident ray (going down-right into center)
+                const incLength = 140;
+                const incStartX = cx - incLength * Math.sin(angleIncRad);
+                const incStartY = boundaryY - incLength * Math.cos(angleIncRad);
+                
+                refrCtx.strokeStyle = '#40a9ff'; // joyBlue
+                refrCtx.beginPath();
+                refrCtx.moveTo(incStartX, incStartY);
+                refrCtx.lineTo(cx, boundaryY);
+                refrCtx.stroke();
+
+                // Refracted ray (going down-right out of center)
+                const refLength = 140;
+                const refEndX = cx + refLength * Math.sin(angleRefRad);
+                const refEndY = boundaryY + refLength * Math.cos(angleRefRad);
+                
+                refrCtx.strokeStyle = '#4cd964'; // joyGreen
+                refrCtx.beginPath();
+                refrCtx.moveTo(cx, boundaryY);
+                refrCtx.lineTo(refEndX, refEndY);
+                refrCtx.stroke();
+
+                // Arrows on rays
+                const drawArrowhead = (x, y, angle, color) => {
+                    refrCtx.save();
+                    refrCtx.translate(x, y);
+                    refrCtx.rotate(angle);
+                    refrCtx.fillStyle = color;
+                    refrCtx.beginPath();
+                    refrCtx.moveTo(0, 0);
+                    refrCtx.lineTo(-10, -5);
+                    refrCtx.lineTo(-10, 5);
+                    refrCtx.closePath();
+                    refrCtx.fill();
+                    refrCtx.restore();
+                };
+                drawArrowhead(cx - (incLength/2) * Math.sin(angleIncRad), boundaryY - (incLength/2) * Math.cos(angleIncRad), Math.PI/2 + angleIncRad, '#40a9ff');
+                drawArrowhead(cx + (refLength/2) * Math.sin(angleRefRad), boundaryY + (refLength/2) * Math.cos(angleRefRad), Math.PI/2 + angleRefRad, '#4cd964');
+
+                // 6. Draw Angle Arcs & Labels
+                refrCtx.lineWidth = 2;
+                refrCtx.strokeStyle = '#ffd000'; // joyYellow
+                
+                // Incident Angle Arc (Angle with vertical normal line)
+                refrCtx.beginPath();
+                refrCtx.arc(cx, boundaryY, 35, -Math.PI/2 - angleIncRad, -Math.PI/2);
+                refrCtx.stroke();
+                
+                // Refracted Angle Arc
+                refrCtx.strokeStyle = '#ff80b5'; // joyPink
+                refrCtx.beginPath();
+                refrCtx.arc(cx, boundaryY, 35, Math.PI/2 - angleRefRad, Math.PI/2);
+                refrCtx.stroke();
+
+                // Dynamic Angle Text positioning
+                refrCtx.fillStyle = '#ffd000';
+                refrCtx.font = 'bold 15px sans-serif';
+                refrCtx.fillText(`i = ${refrState.incidentAngle}°`, cx - 35 - 18, boundaryY - 45);
+
+                refrCtx.fillStyle = '#ff80b5';
+                refrCtx.fillText(`r = ${angleRefDeg}°`, cx + 18, boundaryY + 55);
+
+                // Deep / Shallow labels
+                refrCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                refrCtx.font = 'bold 13px Quicksand';
+                refrCtx.fillText(currentLang === 'en' ? 'Deep Region' : 'Kawasan Dalam', cx - 130, 60);
+                refrCtx.fillText(currentLang === 'en' ? 'Shallow Region' : 'Kawasan Cetek', cx - 140, h - 60);
+
+            } else {
+                // SOUND WAVES DAY vs NIGHT SIMULATOR
+                const isDay = refrState.mode === 'sound-day';
+                
+                // Draw landscape skies
+                const gradientSky = refrCtx.createLinearGradient(0, 0, 0, h - 70);
+                if (isDay) {
+                    gradientSky.addColorStop(0, '#fbcfe8'); // Hot pink skies
+                    gradientSky.addColorStop(1, '#ffedd5'); // Warm orange sunset glow
+                } else {
+                    gradientSky.addColorStop(0, '#020617'); // Pitch black
+                    gradientSky.addColorStop(1, '#1e1b4b'); // Night indigo
+                }
+                refrCtx.fillStyle = gradientSky;
+                refrCtx.fillRect(0, 0, w, h);
+
+                // Draw ground terrain
+                refrCtx.fillStyle = isDay ? '#b45309' : '#065f46'; // warm sand vs cold grass
+                refrCtx.fillRect(0, h - 70, w, 70);
+
+                refrCtx.strokeStyle = '#f8fafc';
+                refrCtx.lineWidth = 4;
+                refrCtx.beginPath();
+                refrCtx.moveTo(0, h - 70);
+                refrCtx.lineTo(w, h - 70);
+                refrCtx.stroke();
+
+                // Text labels on temperature layers
+                refrCtx.font = 'bold 13px Quicksand';
+                if (isDay) {
+                    refrCtx.fillStyle = '#b45309';
+                    refrCtx.fillText(currentLang === 'en' ? '🔥 HOT GROUND (Fast Speed)' : '🔥 DARAT PANAS (Halaju Laju)', cx - 110, h - 35);
+                    refrCtx.fillStyle = '#475569';
+                    refrCtx.fillText(currentLang === 'en' ? '❄️ COOL AIR (Slow Speed)' : '❄️ UDARA SEJUK (Halaju Perlahan)', cx - 100, 50);
+                } else {
+                    refrCtx.fillStyle = '#34d399';
+                    refrCtx.fillText(currentLang === 'en' ? '❄️ COLD GROUND (Slow Speed)' : '❄️ DARAT SEJUK (Halaju Perlahan)', cx - 110, h - 35);
+                    refrCtx.fillStyle = '#fde047';
+                    refrCtx.fillText(currentLang === 'en' ? '🔥 WARM INVERSION AIR (Fast Speed)' : '🔥 UDARA PANAS BALIKAN (Halaju Laju)', cx - 130, 50);
+                }
+
+                // Draw Sound source speaker on the left
+                const spX = 60;
+                const spY = h - 110;
+                refrCtx.fillStyle = '#334155';
+                refrCtx.fillRect(spX - 10, spY - 20, 20, 40);
+                refrCtx.beginPath();
+                refrCtx.moveTo(spX + 10, spY - 20);
+                refrCtx.lineTo(spX + 25, spY - 35);
+                refrCtx.lineTo(spX + 25, spY + 35);
+                refrCtx.closePath();
+                refrCtx.fill();
+
+                // Draw speaker waves / Sound Ray bending
+                refrCtx.lineWidth = 3.5;
+                const rayCount = 4;
+                
+                for(let r = 0; r < rayCount; r++) {
+                    const startAngle = -0.3 + (r / (rayCount - 1)) * 0.6; // Spread factor
+                    refrCtx.beginPath();
+                    refrCtx.moveTo(spX + 20, spY);
+
+                    // Integrate ray steps across canvas width
+                    let currX = spX + 20;
+                    let currY = spY;
+                    let stepSize = 8;
+                    let rayAngle = startAngle;
+
+                    refrCtx.strokeStyle = isDay ? '#ff80b5' : '#4cd964';
+
+                    while (currX < w - 20 && currY < h - 70 && currY > 20) {
+                        let nextX = currX + stepSize * Math.cos(rayAngle);
+                        let nextY = currY + stepSize * Math.sin(rayAngle);
+
+                        // Day curves upwards (y decreases), Night curves downwards (y increases)
+                        // Bending rate depends on temperature gradients
+                        if (isDay) {
+                            // Warm at bottom, cool on top: bend upward (rate increases near warm bottom)
+                            const tempFactor = (h - 70 - currY) / h; // larger near bottom
+                            rayAngle -= 0.007 * (1.1 - tempFactor);
+                        } else {
+                            // Warm at top, cool at bottom: bend downward
+                            const tempFactor = (currY) / h;
+                            rayAngle += 0.007 * (1.1 - tempFactor);
+                        }
+
+                        refrCtx.lineTo(nextX, nextY);
+                        currX = nextX;
+                        currY = nextY;
+                    }
+                    refrCtx.stroke();
+                }
+
+                // Draw wavefront arcs perpendicular to propagation direction
+                refrCtx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+                refrCtx.lineWidth = 2.5;
+                const wavefrontStep = 28;
+                for (let rDist = wavefrontStep; rDist < w - spX; rDist += wavefrontStep) {
+                    refrCtx.beginPath();
+                    
+                    if (isDay) {
+                        // Waves tilt upward
+                        refrCtx.arc(spX + 20, spY + rDist * 0.15, rDist, -0.6, 0.6);
+                    } else {
+                        // Waves tilt downward
+                        refrCtx.arc(spX + 20, spY - rDist * 0.15, rDist, -0.6, 0.6);
+                    }
+                    refrCtx.stroke();
+                }
+            }
+        }
+
+        // --- SIMULATOR 4: DIFFRACTION ---
+        function updateDiffractionParams() {
+            diffState.gap = Number(document.getElementById('diff-gap').value);
+            diffState.wave = Number(document.getElementById('diff-wave').value);
+
+            document.getElementById('diff-gap-val').innerText = diffState.gap + "px";
+            document.getElementById('diff-wave-val').innerText = diffState.wave + "px";
+
+            // Trigger alert warning box styling
+            const box = document.getElementById('diff-alert-box');
+            if (diffState.gap <= diffState.wave) {
+                box.className = "bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 mt-6 text-sm text-emerald-950 font-medium transition-all";
+            } else {
+                box.className = "bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mt-6 text-sm text-amber-900 font-medium transition-all";
+            }
+        }
+
+        const diffCanvas = document.getElementById('canvas-diff');
+        const diffCtx = diffCanvas.getContext('2d');
+        let timeDiff = 0;
+
+        function drawDiffraction() {
+            checkCanvasSize(diffCanvas);
+            const w = diffCanvas.width;
+            const h = diffCanvas.height;
+
+            if (w === 0 || h === 0) return;
+
+            timeDiff += 1.2;
+            const bX = w / 2;
+
+            diffCtx.clearRect(0, 0, w, h);
+            diffCtx.fillStyle = '#0f172a';
+            diffCtx.fillRect(0, 0, w, h);
+
+            diffCtx.strokeStyle = '#a855f7';
+            diffCtx.lineWidth = 3;
+
+            // Incident wave lines (Left side)
+            for (let x = (timeDiff % diffState.wave); x < bX; x += diffState.wave) {
+                diffCtx.beginPath();
+                diffCtx.moveTo(x, 0);
+                diffCtx.lineTo(x, h);
+                diffCtx.globalAlpha = x / bX;
+                diffCtx.stroke();
+            }
+            diffCtx.globalAlpha = 1.0;
+
+            // Diffracted wave elements (Right side)
+            const count = Math.floor(w / diffState.wave) + 2;
+            for (let i = 0; i < count; i++) {
+                let r = (timeDiff % diffState.wave) + (i * diffState.wave);
+                if (r > 0) {
+                    diffCtx.beginPath();
+                    if (diffState.gap <= diffState.wave) {
+                        // Strong circular spreading
+                        diffCtx.arc(bX, h / 2, r, -Math.PI / 2, Math.PI / 2);
+                    } else {
+                        // Weak diffraction
+                        const flat = diffState.gap - diffState.wave;
+                        diffCtx.arc(bX, h/2 - flat/2, r, -Math.PI/2, 0);
+                        diffCtx.lineTo(bX + r, h/2 + flat/2);
+                        diffCtx.arc(bX, h/2 + flat/2, r, 0, Math.PI/2);
+                    }
+                    diffCtx.globalAlpha = Math.max(0, 1.0 - (r / (w * 0.65)));
+                    diffCtx.stroke();
+                }
+            }
+            diffCtx.globalAlpha = 1.0;
+
+            // Drawing structural slit barriers
+            diffCtx.fillStyle = '#94a3b8';
+            diffCtx.strokeStyle = '#1e293b';
+            diffCtx.lineWidth = 3;
+
+            // Upper barrier
+            diffCtx.fillRect(bX - 10, 0, 20, h/2 - diffState.gap/2);
+            diffCtx.strokeRect(bX - 10, 0, 20, h/2 - diffState.gap/2);
+
+            // Lower barrier
+            diffCtx.fillRect(bX - 10, h/2 + diffState.gap/2, 20, h/2 - diffState.gap/2);
+            diffCtx.strokeRect(bX - 10, h/2 + diffState.gap/2, 20, h/2 - diffState.gap/2);
+        }
+
+        // --- SIMULATOR 5: INTERFERENCE & SOUND METER ---
+        function updateInterferenceParams() {
+            intState.dist = Number(document.getElementById('int-dist').value);
+            intState.wave = Number(document.getElementById('int-wave').value);
+
+            document.getElementById('int-dist-val').innerText = intState.dist + "px";
+            document.getElementById('int-wave-val').innerText = intState.wave + "px";
+        }
+
+        const intCanvas = document.getElementById('canvas-int');
+        const intCtx = intCanvas.getContext('2d');
+        let timeInt = 0;
+
+        function drawInterference() {
+            checkCanvasSize(intCanvas);
+            const w = intCanvas.width;
+            const h = intCanvas.height;
+
+            if (w === 0 || h === 0) return;
+
+            timeInt -= 0.6; // speed outwards
+
+            // Sources positions
+            const s1 = { x: 50, y: h/2 - intState.dist/2 };
+            const s2 = { x: 50, y: h/2 + intState.dist/2 };
+
+            // Optimized grid to render fluidly at 60fps on phones and TVs
+            const gridSize = 6;
+            const imgData = intCtx.createImageData(w, h);
+            const k = (2 * Math.PI) / intState.wave;
+
+            for (let y = 0; y < h; y += gridSize) {
+                for (let x = 0; x < w; x += gridSize) {
+                    const d1 = Math.sqrt((x - s1.x)**2 + (y - s1.y)**2);
+                    const d2 = Math.sqrt((x - s2.x)**2 + (y - s2.y)**2);
+
+                    const wave1 = Math.sin(k * d1 + timeInt);
+                    const wave2 = Math.sin(k * d2 + timeInt);
+
+                    // Superposition sum
+                    const amplitude = (wave1 + wave2) / 2;
+                    let intensity = Math.abs(amplitude); // range 0 to 1
+
+                    // Joyful Green mapping for antinodes, deep dark slate base
+                    const r = Math.floor(intensity * 40);
+                    const g = Math.floor(intensity * 200 + 30);
+                    const b = Math.floor(intensity * 100 + 40);
+
+                    // Block fill loops
+                    for (let dy = 0; dy < gridSize; dy++) {
+                        for (let dx = 0; dx < gridSize; dx++) {
+                            const px = x + dx;
+                            const py = y + dy;
+                            if (px < w && py < h) {
+                                const idx = (py * w + px) * 4;
+                                imgData.data[idx] = r;
+                                imgData.data[idx+1] = g;
+                                imgData.data[idx+2] = b;
+                                imgData.data[idx+3] = 255;
+                            }
+                        }
+                    }
+                }
+            }
+            intCtx.putImageData(imgData, 0, 0);
+
+            // Draw Speaker Sources
+            intCtx.fillStyle = '#ffffff';
+            intCtx.strokeStyle = '#000000';
+            intCtx.lineWidth = 3;
+
+            // Speaker 1
+            intCtx.beginPath(); intCtx.arc(s1.x, s1.y, 10, 0, 2*Math.PI); intCtx.fill(); intCtx.stroke();
+            // Speaker 2
+            intCtx.beginPath(); intCtx.arc(s2.x, s2.y, 10, 0, 2*Math.PI); intCtx.fill(); intCtx.stroke();
+
+            // Calculate precise mic level at user position
+            const md1 = Math.sqrt((intState.micX - s1.x)**2 + (intState.micY - s1.y)**2);
+            const md2 = Math.sqrt((intState.micX - s2.x)**2 + (intState.micY - s2.y)**2);
+            
+            // Phase coherence factor
+            const phaseDifference = Math.abs(md1 - md2);
+            const relativeAmp = Math.abs(Math.cos((k * phaseDifference) / 2));
+
+            // Update real-time meter display values
+            const level = Math.round(relativeAmp * 100);
+            document.getElementById('sound-progress-bar').style.width = level + "%";
+            document.getElementById('sound-percentage-txt').innerText = level + "%";
+            document.getElementById('mic-coordinates').innerText = `x:${Math.round(intState.micX)}, y:${Math.round(intState.micY)}`;
+
+            // Draw Mic target icon visually over canvas
+            intCtx.fillStyle = '#ff5e5b';
+            intCtx.beginPath();
+            intCtx.arc(intState.micX, intState.micY, 14, 0, 2*Math.PI);
+            intCtx.fill();
+            intCtx.strokeStyle = '#ffffff';
+            intCtx.lineWidth = 3;
+            intCtx.stroke();
+
+            // Inner target dot
+            intCtx.fillStyle = '#ffffff';
+            intCtx.beginPath();
+            intCtx.arc(intState.micX, intState.micY, 4, 0, 2*Math.PI);
+            intCtx.fill();
+        }
+
+        // Intercept Touch or Mouse events on Interference canvas
+        function setupMicDragging() {
+            const handleInteract = (e) => {
+                const rect = intCanvas.getBoundingClientRect();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                if (!clientX || !clientY) return;
+
+                const rawX = clientX - rect.left;
+                const rawY = clientY - rect.top;
+
+                // Scale for any responsive CSS changes dynamically
+                intState.micX = Math.max(10, Math.min(intCanvas.width - 10, rawX * (intCanvas.width / rect.width)));
+                intState.micY = Math.max(10, Math.min(intCanvas.height - 10, rawY * (intCanvas.height / rect.height)));
+            };
+
+            intCanvas.addEventListener('mousedown', (e) => {
+                intState.isDragging = true;
+                handleInteract(e);
+            });
+
+            intCanvas.addEventListener('mousemove', (e) => {
+                if (intState.isDragging) handleInteract(e);
+            });
+
+            window.addEventListener('mouseup', () => {
+                intState.isDragging = false;
+            });
+
+            // Touch support for mobile devices
+            intCanvas.addEventListener('touchstart', (e) => {
+                intState.isDragging = true;
+                handleInteract(e);
+            }, { passive: true });
+
+            intCanvas.addEventListener('touchmove', (e) => {
+                if (intState.isDragging) handleInteract(e);
+            }, { passive: true });
+
+            intCanvas.addEventListener('touchend', () => {
+                intState.isDragging = false;
+            });
+        }
+
+        // --- MATH INTERFERENCE SOLVER ---
+        function solveInterferenceMath() {
+            const valA = Number(document.getElementById('calc-input-a').value);
+            const valD = Number(document.getElementById('calc-input-D').value);
+            const valLambda = Number(document.getElementById('calc-input-wave').value);
+
+            if (valA > 0 && valD > 0) {
+                const resultX = (valLambda * valD) / valA;
+                document.getElementById('calc-output-x').innerText = resultX.toFixed(3) + " m";
+            } else {
+                document.getElementById('calc-output-x').innerText = "0.000 m";
+            }
+        }
+
+        // --- ANIMATION MASTER LOOP ---
+        function runMasterLoop() {
+            drawFundamentals();
+            drawReflection();
+            drawRefraction();
+            drawDiffraction();
+            drawInterference();
+
+            requestAnimationFrame(runMasterLoop);
+        }
+
+        // --- ONLOAD INITIALIZATION ---
+        window.onload = function () {
+            // Setup canvas elements
+            setupCanvasResolutions();
+            setupMicDragging();
+            applyTranslations();
+            
+            // Default select Refraction mode
+            setRefractionMode('water');
+            
+            // Start the physics loop
+            runMasterLoop();
+
+            // Handle window resizing cleanly
+            window.onresize = function () {
+                setupCanvasResolutions();
+            };
+        };
+    </script>
+</body>
+</html>
